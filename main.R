@@ -21,7 +21,38 @@ library('fgsea')
 #'
 #' @examples se <- make_se('verse_counts.tsv', 'sample_metadata.csv', c('vP0', 'vAd'))
 make_se <- function(counts_csv, metafile_csv, selected_times) {
-    return(NULL)
+    counts <- read_tsv(counts_csv)
+    meta <- read_csv(metafile_csv) 
+    
+    #subset metadata
+    meta_sub <- meta %>%
+        filter(timepoint %in% selected_times)
+
+    sample_names <- meta_sub$samplename
+
+    #subset counts
+    counts_sub <- counts %>%
+        select(gene_id, all_of(sample_names))
+
+    #matrix
+    counts_mat <- counts_sub %>%
+        column_to_rownames("gene_id") %>%
+        as.matrix()
+
+    #match order
+    meta_sub <- meta_sub %>%
+        arrange(match(samplename, colnames(counts_mat)))
+
+    #set reference
+    meta_sub$timepoint <- factor(meta_sub$timepoint, levels = c("vP0", "vAd"))
+
+    se <- SummarizedExperiment(
+        assays = list(counts = counts_mat),
+        colData = meta_sub
+    )
+
+    return(se)
+}
 }
 
 #' Function that runs DESeq2 and returns a named list containing the DESeq2
@@ -36,8 +67,13 @@ make_se <- function(counts_csv, metafile_csv, selected_times) {
 #' @export
 #'
 #' @examples results <- return_deseq_res(se, ~ timepoint)
-return_deseq_res <- function(se, design) {
-    return(NULL)
+return_deseq_res <-function(se, design) {
+    dds <- DESeqDataSet(se, design = design)
+    dds <- DESeq(dds)
+
+    res <- results(dds)
+
+    return(list(dds = dds, results = as.data.frame(res)))
 }
 
 #' Function that takes the DESeq2 results dataframe, converts it to a tibble and
