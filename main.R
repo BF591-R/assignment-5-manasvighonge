@@ -24,6 +24,7 @@ filter <- dplyr::filter
 #' @examples se <- make_se('verse_counts.tsv', 'sample_metadata.csv', c('vP0', 'vAd'))
 make_se <- function(counts_csv, metafile_csv, selected_times) {
     counts <- read_tsv(counts_csv)
+    colnames(counts)[1] <- "gene_id"
     meta <- read_csv(metafile_csv) 
     
     #subset metadata
