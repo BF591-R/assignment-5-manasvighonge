@@ -5,6 +5,8 @@ library('biomaRt')
 library('testthat')
 library('fgsea')
 
+select <- dplyr::select
+filter <- dplyr::filter
 #' Function to generate a SummarizedExperiment object with counts and coldata
 #' to use in DESeq2
 #'
